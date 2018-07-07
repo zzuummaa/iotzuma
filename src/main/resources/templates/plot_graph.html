@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <title>IOT Graphs</title>
+</head>
+
+<body>
+<!--/*@thymesVar id="type" type="temp"*/-->
+<p id="type" th:text="${type}" hidden="true"></p>
+<canvas id="myChart"></canvas>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
+<script type="text/javascript">
+    //<![CDATA[
+    var type = document.getElementById("type").textContent;
+
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = function() {
+        if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+            var parsed = JSON.parse(xmlHttp.responseText);
+
+            var data = []
+            parsed.forEach(function (elem) {
+                data.push({
+                    x:new Date(elem.time),
+                    y:elem.value
+                })
+            })
+
+            drawGraph(data, parsed[0].type)
+        }
+
+
+    }
+    xmlHttp.open("GET", "data?type="+type, true); // true for asynchronous
+    xmlHttp.send();
+
+    function drawGraph(data, type) {
+        // var labels = []
+        // if (data.length < 5) {
+        //     data.forEach(function (elem) {
+        //         labels.push(elem.x.toString('yy-MM-d-h-mm-ss'));
+        //     })
+        // } else {
+        //     var step = data.length / 5;
+        //     for (var i = 0; i < data.length; i += step) {
+        //         labels.push(data[i].x.toString('yy-MM-d-h-mm-ss'));
+        //     }
+        // }
+
+        var ctx = document.getElementById('myChart').getContext('2d');
+        var chart = new Chart(ctx, {
+            // The type of chart we want to create
+            type: 'line',
+
+            // The data for our dataset
+            //labels: ["January", "February", "March", "April", "May", "June", "July"],
+            data: {
+                datasets: [{
+                    label: type,
+                    borderColor: 'rgb(255, 99, 132)',
+                    data: data
+                }]
+            },
+
+            // Configuration options go here
+            options: {
+                responsive: true,
+                title: {
+                    display: true,
+                    text: 'Chart.js Time Point Data'
+                },
+                scales: {
+                    xAxes: [{
+                        type: 'time',
+                        display: true,
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Date'
+                        },
+                        ticks: {
+                            major: {
+                                fontStyle: 'bold',
+                                fontColor: '#FF0000'
+                            }
+                        }
+                    }],
+                    yAxes: [{
+                        display: true,
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'value'
+                        }
+                    }]
+                }
+            }
+        });
+    }
+    //]]>
+</script>
+</body>
+</html>
